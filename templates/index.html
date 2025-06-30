@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>GitHub Webhook Events</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 2em;
+      }
+      .event {
+        margin-bottom: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Latest GitHub Events</h2>
+    <div id="events"></div>
+    <script>
+      function formatEvent(event) {
+        const date = new Date(event.timestamp);
+        const formattedDate =
+          date.toLocaleString("en-GB", { timeZone: "UTC", hour12: true }) +
+          " UTC";
+        if (event.type === "push") {
+          return `<div class="event"><b>${event.author}</b> pushed to <b>${event.to_branch}</b> on ${formattedDate}</div>`;
+        } else if (event.type === "pull_request") {
+          return `<div class="event"><b>${event.author}</b> submitted a pull request from <b>${event.from_branch}</b> to <b>${event.to_branch}</b> on ${formattedDate}</div>`;
+        } else if (event.type === "merge") {
+          return `<div class="event"><b>${event.author}</b> merged branch <b>${event.from_branch}</b> to <b>${event.to_branch}</b> on ${formattedDate}</div>`;
+        }
+        return "";
+      }
+
+      async function fetchEvents() {
+        const res = await fetch("/events");
+        const events = await res.json();
+        document.getElementById("events").innerHTML = events
+          .map(formatEvent)
+          .join("");
+      }
+
+      fetchEvents();
+      setInterval(fetchEvents, 15000);
+    </script>
+  </body>
+</html>

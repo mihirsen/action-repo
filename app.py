@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, abort
 from flask_cors import CORS
 from pymongo import MongoClient
 from datetime import datetime
 import os
 from dotenv import load_dotenv
 
+# Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
@@ -16,8 +17,18 @@ client = MongoClient(MONGO_URI)
 db = client["webhook_db"]
 events_collection = db["events"]
 
+# Optional: Load ngrok URL and webhook secret from .env
+NGROK_URL = os.environ.get("NGROK_URL", "")
+GITHUB_WEBHOOK_SECRET = os.environ.get("GITHUB_WEBHOOK_SECRET", "")
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
+    # Optional: Verify GitHub webhook secret if set
+    if GITHUB_WEBHOOK_SECRET:
+        signature = request.headers.get('X-Hub-Signature-256')
+        # Add signature verification logic here if needed
+        # If verification fails, abort(401)
+
     event_type = request.headers.get('X-GitHub-Event')
     payload = request.json
 
